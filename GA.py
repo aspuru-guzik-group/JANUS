@@ -28,7 +28,7 @@ import multiprocessing
 
 # from mutate import get_mutated_smiles
 from mutate_parr import get_mutated_smiles
-from crossover import crossover_smiles
+from crossover_parr import crossover_smiles_parr
 
 import selfies
 from selfies import encoder, decoder
@@ -198,7 +198,7 @@ if __name__ == '__main__':
         smiles_join = []
         for item in replace_smiles[len(replace_smiles)//2: ]: 
             smiles_join.append(item + 'xxx' + random.choice(keep_smiles))
-        cross_smi_dict =  crossover_smiles(smiles_join)              
+        cross_smi_dict =  crossover_smiles_parr(smiles_join)              
 
         all_mut_smiles = []
         del mut_smi_dict["lock"]
@@ -209,6 +209,7 @@ if __name__ == '__main__':
         
         
         all_cros_smiles = []
+        del cross_smi_dict["lock"]
         for key in cross_smi_dict: 
             all_cros_smiles.extend(cross_smi_dict[key])
         all_cros_smiles = list(set(all_cros_smiles))
@@ -217,7 +218,6 @@ if __name__ == '__main__':
         all_smiles = list(set(all_mut_smiles + all_cros_smiles))
         
         all_smiles_unique = [x for x in all_smiles if x not in smiles_collector]
-        raise Exception('TESTING CROSS ... ')
         
         # STEP 2: CONDUCT FITNESS CALCULATION FOR THE EXPLORATION MOLECULES: 
         replaced_pop = random.sample(all_smiles_unique, generation_size-len(keep_smiles) )
@@ -337,7 +337,8 @@ if __name__ == '__main__':
         with open('./RESULTS' + '/generation_all_best.txt', 'a+') as f: 
             f.writelines(['Gen:{}, {}, {} \n'.format(gen_,  population[fit_all_best], fitness[fit_all_best])])
             
-        raise Exception("TESTING :) ")
+        if gen_ == 0: 
+            raise Exception("TESTING :) ")
 
 
 

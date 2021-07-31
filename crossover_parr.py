@@ -146,7 +146,7 @@ def crossover_smiles(smiles_join):
     
     map_ = {}
 
-    map_[smiles_join] = perform_crossover(smiles_join, num_random_samples=2)
+    map_[smiles_join] = perform_crossover(smiles_join, num_random_samples=1)
 
     # map_ordered = {}
     for key_ in map_: 
@@ -219,15 +219,15 @@ def create_parr_process(chunks, property_name):
 
     
     
-if __name__ == '__main__': 
-    molecules_here        = ['CSSSSSSSSSSSSxxxCCCCCCC'] * 120
+def crossover_smiles_parr(smiles_join): 
     
     num_processors        = multiprocessing.cpu_count()
-    molecules_here_unique = molecules_here  
+    molecules_here_unique = smiles_join  
     ratio            = len(molecules_here_unique) / num_processors 
     chunks           = get_chunks(molecules_here_unique, num_processors, ratio) 
     
     A = create_parr_process(chunks, property_name='logP')
+    return A 
     
     
     

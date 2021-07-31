@@ -191,7 +191,7 @@ def get_mutated_smiles(smiles, alphabet, space='Explore'):
     chunks           = get_chunks(molecules_here_unique, num_processors, ratio) 
         
     if space == 'Explore': 
-        mut_smiles = create_parr_process(chunks, 'logP', num_random_samples=10, num_mutations=10)
+        mut_smiles = create_parr_process(chunks, 'logP', num_random_samples=5, num_mutations=5)
     else: 
         mut_smiles = create_parr_process(chunks, 'logP', num_random_samples=400, num_mutations=400)
 
