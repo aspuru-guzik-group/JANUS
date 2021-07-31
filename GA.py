@@ -102,7 +102,6 @@ def get_good_bad_smiles(fitness, population, generation_size):
     try: 
 
         F_50_val  = fitness[idx_sort[keep_idx]]
-    
         F_25_val = (np.array(fitness) - F_50_val)
         F_25_val = np.array([x for x in F_25_val if x<0]) + F_50_val
         F_25_sort = F_25_val.argsort()[::-1]
