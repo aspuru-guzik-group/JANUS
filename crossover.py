@@ -116,9 +116,12 @@ def perform_crossover(comb_smi, num_random_samples):
                 
     collect_smiles_canon = []
     for item in collect_smiles: 
-        smi_canon = Chem.MolToSmiles(Chem.MolFromSmiles(item, sanitize=True), isomericSmiles=False, canonical=True)
-        if len(smi_canon) <= 81: # Size restriction! 
-            collect_smiles_canon.append(smi_canon)           
+        try: 
+            smi_canon = Chem.MolToSmiles(Chem.MolFromSmiles(item, sanitize=True), isomericSmiles=False, canonical=True)
+            if len(smi_canon) <= 81: # Size restriction! 
+                collect_smiles_canon.append(smi_canon)       
+        except: 
+            continue 
             
     collect_smiles_canon = list(set(collect_smiles_canon))
 
@@ -152,8 +155,10 @@ def get_joint_sim(all_smiles, starting_smile, target_smile):
 def crossover_smiles(smiles_join): 
     
     map_ = {}
-    for item in smiles_join: 
-        map_[item] = perform_crossover(item, num_random_samples=5)
+    for i, item in enumerate(smiles_join):
+        if i % 10 == 0: 
+            print('Cross: {}/{}'.format(i, len(smiles_join)))
+        map_[item] = perform_crossover(item, num_random_samples=2)
 
     map_ordered = {}
     for key_ in map_: 

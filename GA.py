@@ -28,7 +28,7 @@ import multiprocessing
 
 # from mutate import get_mutated_smiles
 from mutate_parr import get_mutated_smiles
-# from crossover import crossover_smiles
+from crossover import crossover_smiles
 
 import selfies
 from selfies import encoder, decoder
@@ -190,7 +190,15 @@ if __name__ == '__main__':
         replace_smiles = list(set(replace_smiles))
 
         # Mutations:     
-        mut_smi_dict = get_mutated_smiles(replace_smiles[0: len(replace_smiles)], alphabet=['[C]']) # Half the molecuules are to be mutated     
+        # mut_smi_dict = get_mutated_smiles(replace_smiles[0: len(replace_smiles)], alphabet=['[C]']) # Half the molecuules are to be mutated     
+        
+        # Mutations:     
+        mut_smi_dict = get_mutated_smiles(replace_smiles[0: len(replace_smiles)//2],  alphabet=['[C]']) # Half the molecuules are to be mutated     
+        # Crossovers: 
+        smiles_join = []
+        for item in replace_smiles[len(replace_smiles)//2: ]: 
+            smiles_join.append(item + 'xxx' + random.choice(keep_smiles))
+        cross_smi_dict =  crossover_smiles(smiles_join)              
 
         all_mut_smiles = []
         del mut_smi_dict["lock"]
@@ -199,8 +207,17 @@ if __name__ == '__main__':
         all_mut_smiles = list(set(all_mut_smiles))
         all_mut_smiles = [x for x in all_mut_smiles if x != '']
         
-        all_smiles = list(set(all_mut_smiles))
+        
+        all_cros_smiles = []
+        for key in cross_smi_dict: 
+            all_cros_smiles.extend(cross_smi_dict[key])
+        all_cros_smiles = list(set(all_cros_smiles))
+        all_cros_smiles = [x for x in all_cros_smiles if x != '']
+        
+        all_smiles = list(set(all_mut_smiles + all_cros_smiles))
+        
         all_smiles_unique = [x for x in all_smiles if x not in smiles_collector]
+        raise Exception('TESTING CROSS ... ')
         
         # STEP 2: CONDUCT FITNESS CALCULATION FOR THE EXPLORATION MOLECULES: 
         replaced_pop = random.sample(all_smiles_unique, generation_size-len(keep_smiles) )
