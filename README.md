@@ -1,5 +1,6 @@
 # JANUS: Parallel Tempered Genetic Algorithm Guided by Deep Neural Networks for Inverse Molecular Design
 
+<img align="center" src="./aux/logo.png"/>
 
 
 ## Paper Results/Reproducibility: 
