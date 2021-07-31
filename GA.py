@@ -44,11 +44,8 @@ RDLogger.DisableLog('rdApp.*')
 import warnings
 warnings.filterwarnings("ignore")
 
-import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+from setup import calc_prop
 
-# from tensorboardX import SummaryWriter
-# writer = SummaryWriter()
 
 def sanitize_smiles(smi):
     '''Return a canonical smile representation of smi
@@ -68,6 +65,7 @@ def sanitize_smiles(smi):
     except:
         return (None, None, False)
 
+
 def get_fp_scores(smiles_back, target_smi): 
     smiles_back_scores = []
     target    = Chem.MolFromSmiles(target_smi)
@@ -78,127 +76,6 @@ def get_fp_scores(smiles_back, target_smi):
         score  = TanimotoSimilarity(fp_mol, fp_target)
         smiles_back_scores.append(score)
     return smiles_back_scores
-
-class _FingerprintCalculator:
-    """
-    Calculate the fingerprint while avoiding a series of if-else.
-    See recipe 8.21 of the book "Python Cookbook".
-
-    To support a new type of fingerprint, just add a function "get_fpname(self, mol)".
-    """
-
-    def get_fingerprint(self, mol: Mol, fp_type: str):
-        method_name = 'get_' + fp_type
-        method = getattr(self, method_name)
-        if method is None:
-            raise Exception(f'{fp_type} is not a supported fingerprint type.')
-        return method(mol)
-
-    def get_AP(self, mol: Mol):
-        return AllChem.GetAtomPairFingerprint(mol, maxLength=10)
-
-    def get_PHCO(self, mol: Mol):
-        return Generate.Gen2DFingerprint(mol, Gobbi_Pharm2D.factory)
-
-    def get_BPF(self, mol: Mol):
-        return GetBPFingerprint(mol)
-
-    def get_BTF(self, mol: Mol):
-        return GetBTFingerprint(mol)
-
-    def get_PATH(self, mol: Mol):
-        return AllChem.RDKFingerprint(mol)
-
-    def get_ECFP4(self, mol: Mol):
-        return AllChem.GetMorganFingerprint(mol, 2)
-
-    def get_ECFP6(self, mol: Mol):
-        return AllChem.GetMorganFingerprint(mol, 3)
-
-    def get_FCFP4(self, mol: Mol):
-        return AllChem.GetMorganFingerprint(mol, 2, useFeatures=True)
-
-    def get_FCFP6(self, mol: Mol):
-        return AllChem.GetMorganFingerprint(mol, 3, useFeatures=True)
-
-
-def get_fingerprint(mol: Mol, fp_type: str):
-    return _FingerprintCalculator().get_fingerprint(mol=mol, fp_type=fp_type)
-
-
-class AtomCounter:
-
-    def __init__(self, element: str) -> None:
-        """
-        Args:
-            element: element to count within a molecule
-        """
-        self.element = element
-
-    def __call__(self, mol: Mol) -> int:
-        """
-        Count the number of atoms of a given type.
-
-        Args:
-            mol: molecule
-
-        Returns:
-            The number of atoms of the given type.
-        """
-        # if the molecule contains H atoms, they may be implicit, so add them
-        if self.element == 'H':
-            mol = Chem.AddHs(mol)
-
-        return sum(1 for a in mol.GetAtoms() if a.GetSymbol() == self.element)
-
-
-
-def parse_molecular_formula(formula: str) :
-    """
-    Parse a molecular formulat to get the element types and counts.
-
-    Args:
-        formula: molecular formula, f.i. "C8H3F3Br"
-
-    Returns:
-        A list of tuples containing element types and number of occurrences.
-    """
-    matches = re.findall(r'([A-Z][a-z]*)(\d*)', formula)
-
-    # Convert matches to the required format
-    results = []
-    for match in matches:
-        # convert count to an integer, and set it to 1 if the count is not visible in the molecular formula
-        count = 1 if not match[1] else int(match[1])
-        results.append((match[0], count))
-
-    return results
-
-from scipy.stats.mstats import gmean
-
-def get_isomer_score(smi, isomer='C9H10N2O2PF2Cl'): 
-    A = parse_molecular_formula(isomer) # The desired counts! 
-    
-    # print('Looking at smiles: ', smi)
-    mol = Chem.MolFromSmiles(smi)
-    
-    save_counts = [] # The actual Counts! 
-    for element, n_atoms in A: 
-        # print('Looking at: ', element)
-        # print('Count: ', AtomCounter(element)(mol))
-        save_counts.append((element, AtomCounter(element)(mol)))
-        # raise Exception('TESTING!')
-    
-    total_atoms_desired = sum([x[1] for x in A])
-    total_atoms_actual  = sum([x[1] for x in save_counts])
-    
-    val_ = [np.exp( - ((save_counts[i][1] - A[i][1])**2)/2) for i in range(len(A))]
-    val_.append(np.exp( - ((total_atoms_actual - total_atoms_desired)**2)/2))
-    
-    final_1 = gmean(val_)
-    return final_1
-
-
 
 def get_random_smiles(num_random): 
 
@@ -260,8 +137,8 @@ if __name__ == '__main__':
     with open('./DATA/guacamol_v1_train.smiles', 'r') as f: 
         guac_smiles = f.readlines()
     
-    guac_smiles = [x.strip() for x in guac_smiles][0: 100] # TODO! 
-    fp_scores_guac     = [get_isomer_score(smi) for smi in guac_smiles]
+    guac_smiles = [x.strip() for x in guac_smiles][0: 5000] # TODO! 
+    fp_scores_guac     = [calc_prop(smi) for smi in guac_smiles]
     fp_scores_guac_idx = np.argsort(fp_scores_guac)[::-1]
     print('Fp calc time: ', time.time()-start_time)
     
@@ -272,7 +149,7 @@ if __name__ == '__main__':
     
     smiles_collector = {} # A tracker for all smiles! 
     generations      = 200
-    generation_size  = 5000 # 5000
+    generation_size  = 5000 
     num_mutation_ls  = [5]
     mutn_prob        = 0.75       # chance of mutation; else a crossover is performed 
     choice_ls        = [1, 2, 3] # Insert; replace; delete 
@@ -288,7 +165,7 @@ if __name__ == '__main__':
     
     prop_map = {}
     for item in unique_pop: 
-        prop_map[item] = get_isomer_score(item)
+        prop_map[item] = calc_prop(item)
     
     fitness        = []
     for item in population: 
@@ -334,7 +211,7 @@ if __name__ == '__main__':
         unique_pop     = list(set(population))
         prop_map = {}
         for item in unique_pop: 
-            prop_map[item] = get_isomer_score(item)
+            prop_map[item] = calc_prop(item)
             
         fitness        = []
         for item in population: 
@@ -384,7 +261,7 @@ if __name__ == '__main__':
         # STEP 4: CALCULATE THE FITNESS FOR THE LOCAL SEARCH: 
         prop_map = {}
         for item in mut_smi_dict_local_calc: 
-            prop_map[item] = get_isomer_score(item)
+            prop_map[item] = calc_prop(item)
         
         
         fitness_local_search = []
@@ -441,17 +318,10 @@ if __name__ == '__main__':
         fit_all_best = np.argmax(fitness)
 
             
-        scores = [get_isomer_score(smi, isomer='C9H10N2O2PF2Cl') for smi in pop_best_] 
-        a          = np.argsort(scores)[::-1][:250]
-        scores_top = [scores[i] for i in a ]
-        smiles_top = [pop_best_[i] for i in a]
-        print('GUACAMOL Score: ', gmean(scores_top))
-
-            
         with open('./RESULTS' + '/generation_all_best.txt', 'a+') as f: 
-            f.writelines(['Gen:{}, {}, {} {}\n'.format(gen_,  population[fit_all_best], fitness[fit_all_best], gmean(scores_top))])
+            f.writelines(['Gen:{}, {}, {} \n'.format(gen_,  population[fit_all_best], fitness[fit_all_best])])
             
-
+        raise Exception("TESTING :) ")
 
 
 
