@@ -232,20 +232,22 @@ if __name__ == '__main__':
         if gen_ == 0: 
             replaced_pop = random.sample(all_smiles_unique, generation_size-len(keep_smiles))
         else: 
-            # The sampling needs to be done by the neural network! 
-            print('    Training Neural Net')
-            train_smiles, pro_val = [], []
-            for item in smiles_collector: 
-                train_smiles.append(item)
-                pro_val.append(smiles_collector[item][0])
-            train_and_save_model(train_smiles, pro_val, generation_index=gen_)
-            
-            # Obtain predictions on unseen molecules: 
-            print('    Obtaining Predictions')
-            new_predictions  = obtain_new_pred(all_smiles_unique, generation_index=gen_)
-            NN_pred_sort     = np.argsort(new_predictions)[::-1]
-            replaced_pop     = [all_smiles_unique[NN_pred_sort[i]] for i in range(generation_size-len(keep_smiles))]
-            
+            if params_['use_NN_classifier'] == True: 
+                # The sampling needs to be done by the neural network! 
+                print('    Training Neural Net')
+                train_smiles, pro_val = [], []
+                for item in smiles_collector: 
+                    train_smiles.append(item)
+                    pro_val.append(smiles_collector[item][0])
+                train_and_save_model(train_smiles, pro_val, generation_index=gen_)
+                
+                # Obtain predictions on unseen molecules: 
+                print('    Obtaining Predictions')
+                new_predictions  = obtain_new_pred(all_smiles_unique, generation_index=gen_)
+                NN_pred_sort     = np.argsort(new_predictions)[::-1]
+                replaced_pop     = [all_smiles_unique[NN_pred_sort[i]] for i in range(generation_size-len(keep_smiles))]
+            else: 
+                replaced_pop = random.sample(all_smiles_unique, generation_size-len(keep_smiles))
         
 
         population   = keep_smiles + replaced_pop

@@ -11,11 +11,12 @@ def generate_params():
     
     params_ = {}
     
-    params_['generations']      = 200
-    params_['generation_size']  = 5000
-    params_['start_population'] = './DATA/sample_start_smiles.txt'
-    params_['num_exchanges']    = 5
-    params_['use_fragments']    = False # TODO: Set this to true! 
+    params_['generations']        = 200
+    params_['generation_size']    = 5000
+    params_['start_population']   = './DATA/sample_start_smiles.txt'
+    params_['num_exchanges']      = 5
+    params_['use_fragments']      = False # TODO: Set this to true! 
+    params_['use_NN_classifier']  = False # TODO: Set this to true! 
     
     return params_
 
