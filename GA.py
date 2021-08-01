@@ -44,7 +44,7 @@ RDLogger.DisableLog('rdApp.*')
 import warnings
 warnings.filterwarnings("ignore")
 
-from setup import calc_prop
+from setup import calc_prop, generate_params
 from NN import train_and_save_model, obtain_new_pred
 
 
@@ -133,6 +133,7 @@ def get_good_bad_smiles(fitness, population, generation_size):
 
 if __name__ == '__main__': 
     
+    params_ = generate_params()
     start_time = time.time()
     with open('./DATA/guacamol_v1_train.smiles', 'r') as f: 
         guac_smiles = f.readlines()
@@ -148,12 +149,9 @@ if __name__ == '__main__':
     
     
     smiles_collector = {} # A tracker for all smiles! 
-    generations      = 200
-    generation_size  = 5000 
-    num_mutation_ls  = [5]
-    mutn_prob        = 0.75       # chance of mutation; else a crossover is performed 
-    choice_ls        = [1, 2, 3] # Insert; replace; delete 
-    
+    generations      = params_['generations']
+    generation_size  = params_['generation_size'] 
+
             
     # population = np.random.choice(initial_mol, size=generation_size).tolist()
     population = initial_mol[0: generation_size]

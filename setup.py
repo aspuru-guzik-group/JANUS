@@ -7,7 +7,16 @@ Created on Sat Jul 31 14:46:02 2021
 """
 
 
+def generate_params(): 
+    
+    params_ = {}
+    params_['generations'] = 200
+    params_['generation_size'] = 5000
 
+    
+    
+    
+    return params_
 
 
 

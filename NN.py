@@ -256,9 +256,7 @@ def get_mol_info(smi):
 
         
     simple_bond_info.append(num_triple)          # number of triple bonds in rings
-                                                 # appended onto 'simple_bond_info'
                                               
-                                    
     # Calculate the number of rings of size 3 to 20 & number of conseq. double bonds in rings 
     simple_bond_info = simple_bond_info + size_ring_counter(ring_ls)
     
