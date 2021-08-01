@@ -14,10 +14,9 @@ By: AkshatKumar Nigam, Robert Pollice, Alán Aspuru-Guzik
 
 ## Using The Code: 
 The code can be run using: 
-'''
-python3 JANUS.py
-'''
-
+```
+python ./JANUS.py
+```  
 ## Paper Results/Reproducibility: 
 Our code and results for each experiment in the paper can be found here: 
 * Experiment 4.1: https://drive.google.com/file/d/1rscIyzpTvtyiEkoP1WsF-XtSHJGQStUU/view?usp=sharing
