@@ -5,42 +5,23 @@ Created on Fri Apr 23 04:14:17 2021
 
 @author: akshat
 """
-from scipy.stats.mstats import gmean
-import re 
 import time 
-import os
 import numpy as np 
 import random
-import seaborn as sns
-import matplotlib.pyplot as plt
 from rdkit.Chem import MolFromSmiles as smi2mol
 from rdkit.Chem import MolToSmiles as mol2smi
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.DataStructs.cDataStructs import TanimotoSimilarity
-# from SAS_calculator.sascorer import calculateScore
-from rdkit import RDLogger
-from rdkit.Chem import Descriptors
-RDLogger.DisableLog('rdApp.*')
-import pandas as pd
-import dask.dataframe as dd
-import multiprocessing
+
 
 # from mutate import get_mutated_smiles
 from mutate_parr import get_mutated_smiles
 from crossover_parr import crossover_smiles_parr
 
-import selfies
-from selfies import encoder, decoder
-
-
-from rdkit.Chem import Mol
-from rdkit.Chem.AtomPairs.Sheridan import GetBPFingerprint, GetBTFingerprint
-from rdkit.Chem.Pharm2D import Generate, Gobbi_Pharm2D
 
 from rdkit import RDLogger
 RDLogger.DisableLog('rdApp.*')
-
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -77,21 +58,6 @@ def get_fp_scores(smiles_back, target_smi):
         score  = TanimotoSimilarity(fp_mol, fp_target)
         smiles_back_scores.append(score)
     return smiles_back_scores
-
-def get_random_smiles(num_random): 
-
-    alphabet = ['[=N]', '[C]', '[S]','[Branch3_1]','[Expl=Ring3]','[Branch1_1]','[Branch2_2]','[Ring1]', '[#P]','[O]', '[Branch2_1]', '[N]','[=O]','[P]','[Expl=Ring1]','[Branch3_2]','[I]', '[Expl=Ring2]', '[=P]','[Branch1_3]','[#C]','[Cl]', '[=C]','[=S]','[Branch1_2]','[#N]','[Branch2_3]','[Br]','[Branch3_3]','[Ring3]','[Ring2]','[F]'] +  ['[C][=C][C][=C][C][=C][Ring1][Branch1_2]']*2 
-    max_smi_len = 81
-    collect_random = []
-    
-    for _ in range(num_random): 
-        random_len = random.randint(1, max_smi_len+1)
-        random_alphabets = list(np.random.choice(alphabet, random_len)) 
-        random_selfies = ''.join(x for x in random_alphabets)
-        
-        collect_random.append(decoder(random_selfies))
-    
-    return [x for x in collect_random if x != '']
 
 
 def get_good_bad_smiles(fitness, population, generation_size): 

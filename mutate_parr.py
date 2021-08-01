@@ -6,20 +6,13 @@ Created on Sat Jul 31 12:15:57 2021
 @author: akshat
 """
 from __future__ import print_function
-import os
 import rdkit
 import random
 import multiprocessing
 from rdkit import Chem
-from rdkit.Chem import Draw
 from rdkit.Chem import MolFromSmiles as smi2mol
 from rdkit.Chem import MolToSmiles as mol2smi
-from rdkit.Chem import Descriptors
-from selfies import decoder 
-import numpy as np
-import inspect
-from collections import OrderedDict
-from selfies import encoder, decoder
+from selfies import encoder, decoder 
 
 manager = multiprocessing.Manager()
 lock = multiprocessing.Lock()
