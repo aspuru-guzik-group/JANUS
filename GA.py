@@ -338,8 +338,8 @@ if __name__ == '__main__':
         # Introduce changes to 'fitness' & 'population'
         # With replacesments from 'fitness_local_search' & 'mut_smi_dict_local_calc'
         num_exchanges     = 5
-        introduce_smiles  = population_sort[0:num_exchanges] # Taking the top 5 molecules
-        introduce_fitness = fitness_sort[0:num_exchanges]    # Taking the top 5 molecules
+        introduce_smiles  = population_sort[0: num_exchanges] # Taking the top 5 molecules
+        introduce_fitness = fitness_sort[0: num_exchanges]    # Taking the top 5 molecules
         
         worst_indices = idx_sort[-num_exchanges: ]
         for i,idx in enumerate(worst_indices): 
