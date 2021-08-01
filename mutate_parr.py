@@ -43,7 +43,7 @@ def get_selfie_chars(selfie):
         selfie = selfie[selfie.find(']')+1:]
     return chars_selfie
 
-def mutate_sf(sf_chars): 
+def mutate_sf(sf_chars, alphabet): 
     '''
     Provided a list of SELFIE characters, this function will return a modified 
     SELFIES. 
@@ -52,9 +52,11 @@ def mutate_sf(sf_chars):
     choices_ls = [1, 2, 3] # TODO: 1 = mutate; 2 = addition; 3=delete
     mutn_choice = choices_ls[random.choice(range(len(choices_ls)))] # Which mutation to do: 
         
-    # alphabet = random.sample(alphabet, 200) + ['[=N]', '[C]', '[S]','[Branch3_1]','[Expl=Ring3]','[Branch1_1]','[Branch2_2]','[Ring1]', '[#P]','[O]', '[Branch2_1]', '[N]','[=O]','[P]','[Expl=Ring1]','[Branch3_2]','[I]', '[Expl=Ring2]', '[=P]','[Branch1_3]','[#C]','[Cl]', '[=C]','[=S]','[Branch1_2]','[#N]','[Branch2_3]','[Br]','[Branch3_3]','[Ring3]','[Ring2]','[F]']
-    alphabet = ['[=N]', '[C]', '[S]','[Branch3_1]','[Expl=Ring3]','[Branch1_1]','[Branch2_2]','[Ring1]', '[#P]','[O]', '[Branch2_1]', '[N]','[=O]','[P]','[Expl=Ring1]','[Branch3_2]','[I]', '[Expl=Ring2]', '[=P]','[Branch1_3]','[#C]','[Cl]', '[=C]','[=S]','[Branch1_2]','[#N]','[Branch2_3]','[Br]','[Branch3_3]','[Ring3]','[Ring2]','[F]']
-    
+    if alphabet != []: 
+        alphabet = random.sample(alphabet, 200) + ['[=N]', '[C]', '[S]','[Branch3_1]','[Expl=Ring3]','[Branch1_1]','[Branch2_2]','[Ring1]', '[#P]','[O]', '[Branch2_1]', '[N]','[=O]','[P]','[Expl=Ring1]','[Branch3_2]','[I]', '[Expl=Ring2]', '[=P]','[Branch1_3]','[#C]','[Cl]', '[=C]','[=S]','[Branch1_2]','[#N]','[Branch2_3]','[Br]','[Branch3_3]','[Ring3]','[Ring2]','[F]']
+    else: 
+        alphabet = ['[=N]', '[C]', '[S]','[Branch3_1]','[Expl=Ring3]','[Branch1_1]','[Branch2_2]','[Ring1]', '[#P]','[O]', '[Branch2_1]', '[N]','[=O]','[P]','[Expl=Ring1]','[Branch3_2]','[I]', '[Expl=Ring2]', '[=P]','[Branch1_3]','[#C]','[Cl]', '[=C]','[=S]','[Branch1_2]','[#N]','[Branch2_3]','[Br]','[Branch3_3]','[Ring3]','[Ring2]','[F]']
+   
     # Mutate character: 
     if mutn_choice == 1: 
         random_char = alphabet[random.choice(range(len(alphabet)))]
@@ -93,8 +95,8 @@ def get_prop_material(smile, alphabet, num_random_samples, num_mutations):
     for sf_chars in selfies_ls_chars: 
         
         for i in range(num_mutations): 
-            if i == 0:  mutated_sf.append(mutate_sf(sf_chars))
-            else:       mutated_sf.append(mutate_sf ( get_selfie_chars(mutated_sf[-1]) ))
+            if i == 0:  mutated_sf.append(mutate_sf(sf_chars, alphabet))
+            else:       mutated_sf.append(mutate_sf ( get_selfie_chars(mutated_sf[-1]), alphabet ))
             
     mutated_smiles = [decoder(x) for x in mutated_sf]    
     mutated_smiles_canon = []
@@ -146,15 +148,15 @@ def get_chunks(arr, num_processors, ratio):
     return chunks 
 
 
-def calc_parr_prop(unseen_smile_ls, property_name, props_collect, num_random_samples, num_mutations):
+def calc_parr_prop(unseen_smile_ls, property_name, props_collect, num_random_samples, num_mutations, alphabet):
     '''Calculate logP for each molecule in unseen_smile_ls, and record results
        in locked dictionary props_collect 
     '''
     for smile in unseen_smile_ls: 
-        props_collect[property_name][smile] = get_prop_material(smile, alphabet='[C]', num_random_samples=num_random_samples, num_mutations=num_mutations)  # TODO: TESTING
+        props_collect[property_name][smile] = get_prop_material(smile, alphabet=alphabet, num_random_samples=num_random_samples, num_mutations=num_mutations)  # TODO: TESTING
 
 
-def create_parr_process(chunks, property_name, num_random_samples, num_mutations):
+def create_parr_process(chunks, alphabet, property_name, num_random_samples, num_mutations):
     ''' Create parallel processes for calculation of properties
     '''
     process_collector    = []
@@ -167,7 +169,7 @@ def create_parr_process(chunks, property_name, num_random_samples, num_mutations
         collect_dictionaries.append(props_collect)
         
         if property_name == 'logP':
-            process_collector.append(multiprocessing.Process(target=calc_parr_prop, args=(item, property_name, props_collect, num_random_samples, num_mutations, )))   
+            process_collector.append(multiprocessing.Process(target=calc_parr_prop, args=(item, property_name, props_collect, num_random_samples, num_mutations, alphabet, )))   
     
     for item in process_collector:
         item.start()
@@ -191,9 +193,9 @@ def get_mutated_smiles(smiles, alphabet, space='Explore'):
     chunks           = get_chunks(molecules_here_unique, num_processors, ratio) 
         
     if space == 'Explore': 
-        mut_smiles = create_parr_process(chunks, 'logP', num_random_samples=5, num_mutations=5)
+        mut_smiles = create_parr_process(chunks, alphabet, 'logP', num_random_samples=5, num_mutations=5)
     else: 
-        mut_smiles = create_parr_process(chunks, 'logP', num_random_samples=400, num_mutations=400)
+        mut_smiles = create_parr_process(chunks, alphabet, 'logP', num_random_samples=400, num_mutations=400)
 
     return mut_smiles
     
@@ -201,9 +203,8 @@ def get_mutated_smiles(smiles, alphabet, space='Explore'):
     
     
 if __name__ == '__main__': 
-    # molecules_here        = ['CCC', 'CCCC', 'CCCCC', 'CCCCCCCC', 'CS', 'CSSS', 'CSSSSS', 'CF', 'CI', 'CBr', 'CSSSSSSSSSSSS', 'CSSSSSSSSSC', 'CSSSSCCSSSC', 'CSSSSSSSSSF', 'SSSSSC']
-    molecules_here        = ['CSSSSSSSSSSSS']
-    A = get_mutated_smiles(molecules_here, alphabet=['[C]'], space='Explot')
+    molecules_here        = ['CCC', 'CCCC', 'CCCCC', 'CCCCCCCC', 'CS', 'CSSS', 'CSSSSS', 'CF', 'CI', 'CBr', 'CSSSSSSSSSSSS', 'CSSSSSSSSSC', 'CSSSSCCSSSC', 'CSSSSSSSSSF', 'SSSSSC']
+    A = get_mutated_smiles(molecules_here, alphabet=['[C]']*500, space='Explore')
     
     
     

@@ -176,10 +176,17 @@ if __name__ == '__main__':
         smiles_collector[item] = [prop_map[item], 1] # [Property_value, Count]
 
     
-    # with open('./DATA/fragments_selfies.txt', 'r') as f: 
-    #     alphabet = f.readlines()
-    # alphabet = [x.strip() for x in alphabet]
-    # print('Mutation alphabets obtained! ')
+    # CREATUIB OF FRAGMENTS: 
+    if params_['use_fragments'] == True: 
+        from fragment_prep import form_fragments
+        form_fragments(params_)
+        with open('./DATA/fragments_selfies.txt', 'r') as f: 
+            alphabet = f.readlines()
+        alphabet = [x.strip() for x in alphabet]
+        alphabet = [x for x in alphabet if len(x) != 0]
+    else: 
+        alphabet = []
+        
     
     for gen_ in range(generations): 
         
@@ -194,7 +201,7 @@ if __name__ == '__main__':
         # mut_smi_dict = get_mutated_smiles(replace_smiles[0: len(replace_smiles)], alphabet=['[C]']) # Half the molecuules are to be mutated     
         
         # Mutations:     
-        mut_smi_dict = get_mutated_smiles(replace_smiles[0: len(replace_smiles)//2],  alphabet=['[C]']) # Half the molecuules are to be mutated     
+        mut_smi_dict = get_mutated_smiles(replace_smiles[0: len(replace_smiles)//2],  alphabet=alphabet) # Half the molecuules are to be mutated     
         # Crossovers: 
         smiles_join = []
         for item in replace_smiles[len(replace_smiles)//2: ]: 
@@ -284,7 +291,7 @@ if __name__ == '__main__':
         
         # STEP 3: CONDUCT LOCAL SEARCH: 
         smiles_local_search = [population[top_idx]]
-        mut_smi_dict_local  = get_mutated_smiles(smiles_local_search, alphabet=['[C]'], space='Local')
+        mut_smi_dict_local  = get_mutated_smiles(smiles_local_search, alphabet=alphabet, space='Local')
         mut_smi_dict_local  = mut_smi_dict_local[population[top_idx]]
         mut_smi_dict_local  = [x for x in mut_smi_dict_local if x not in smiles_collector]
 
@@ -337,7 +344,7 @@ if __name__ == '__main__':
         # STEP 5: EXCHANGE THE POPULATIONS:         
         # Introduce changes to 'fitness' & 'population'
         # With replacesments from 'fitness_local_search' & 'mut_smi_dict_local_calc'
-        num_exchanges     = 5
+        num_exchanges     = params_['num_exchanges']
         introduce_smiles  = population_sort[0: num_exchanges] # Taking the top 5 molecules
         introduce_fitness = fitness_sort[0: num_exchanges]    # Taking the top 5 molecules
         

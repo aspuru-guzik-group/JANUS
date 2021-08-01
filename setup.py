@@ -10,12 +10,12 @@ Created on Sat Jul 31 14:46:02 2021
 def generate_params(): 
     
     params_ = {}
-    params_['generations'] = 200
-    params_['generation_size'] = 5000
+    
+    params_['generations']      = 200
+    params_['generation_size']  = 5000
     params_['start_population'] = './DATA/sample_start_smiles.txt'
-
-    
-    
+    params_['num_exchanges']    = 5
+    params_['use_fragments']    = False # TODO: Set this to true! 
     
     return params_
 
