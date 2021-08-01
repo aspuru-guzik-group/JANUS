@@ -21,13 +21,6 @@ Our code and results for each experiment in the paper can be found here:
 * Experiment 4.3: https://drive.google.com/file/d/1tlIdfSWwzVeJ5kZ98l8G6osE9zf9wP1f/view?usp=sharing
 
 
-
-
-
-
-
-
-
 ## Questions, problems?
 Make a github issue 😄. Please be as clear and descriptive as possible. Please feel free to reach
 out in person: (akshat[DOT]nigam[AT]mail[DOT]utoronto[DOT]ca, rob[DOT]pollice[AT]utoronto[DOT]ca)
