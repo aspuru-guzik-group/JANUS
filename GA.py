@@ -45,6 +45,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 from setup import calc_prop
+from NN import train_and_save_model, obtain_new_pred
 
 
 def sanitize_smiles(smi):
@@ -220,7 +221,25 @@ if __name__ == '__main__':
         all_smiles_unique = [x for x in all_smiles if x not in smiles_collector]
         
         # STEP 2: CONDUCT FITNESS CALCULATION FOR THE EXPLORATION MOLECULES: 
-        replaced_pop = random.sample(all_smiles_unique, generation_size-len(keep_smiles) )
+        # replaced_pop = random.sample(all_smiles_unique, generation_size-len(keep_smiles) )
+        if gen_ == 0: 
+            replaced_pop = random.sample(all_smiles_unique, generation_size-len(keep_smiles))
+        else: 
+            # The sampling needs to be done by the neural network! 
+            print('    Training Neural Net')
+            train_smiles, pro_val = [], []
+            for item in smiles_collector: 
+                train_smiles.append(item)
+                pro_val.append(smiles_collector[item][0])
+            train_and_save_model(train_smiles, pro_val, generation_index=gen_)
+            
+            # Obtain predictions on unseen molecules: 
+            print('    Obtaining Predictions')
+            new_predictions  = obtain_new_pred(all_smiles_unique, generation_index=gen_)
+            NN_pred_sort     = np.argsort(new_predictions)[::-1]
+            replaced_pop     = [all_smiles_unique[NN_pred_sort[i]] for i in range(generation_size-len(keep_smiles))]
+            
+        
 
         population   = keep_smiles + replaced_pop
         
@@ -337,8 +356,6 @@ if __name__ == '__main__':
         with open('./RESULTS' + '/generation_all_best.txt', 'a+') as f: 
             f.writelines(['Gen:{}, {}, {} \n'.format(gen_,  population[fit_all_best], fitness[fit_all_best])])
             
-        if gen_ == 0: 
-            raise Exception("TESTING :) ")
 
 
 

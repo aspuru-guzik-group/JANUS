@@ -4,6 +4,8 @@ By: AkshatKumar Nigam, Robert Pollice, Alán Aspuru-Guzik
 
 <img align="center" src="./aux/logo.png"/>
 
+## Package Requirements: 
+
 
 ## Using The Code: 
 
