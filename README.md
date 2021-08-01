@@ -13,7 +13,10 @@ By: AkshatKumar Nigam, Robert Pollice, Alán Aspuru-Guzik
 - [numpy](https://pypi.org/project/numpy/)
 
 ## Using The Code: 
-
+The code can be run using: 
+'''
+python3 JANUS.py
+'''
 
 ## Paper Results/Reproducibility: 
 Our code and results for each experiment in the paper can be found here: 

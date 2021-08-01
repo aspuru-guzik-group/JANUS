@@ -49,7 +49,7 @@ def calc_prop(smi):
     '''
     Given a SMILES string (smi), a user needs to provide code for calculating a 
     property value of interest. This function is used throughout JANUS for obtaining the 
-    fitness values. 
+    fitness values. As a dummy value, the function return 1.0 for a give SMILES. 
     
     NOTE: 
         If the objective is to minimize the property value, please add a minus sign to 
