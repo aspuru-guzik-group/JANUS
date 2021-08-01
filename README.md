@@ -5,8 +5,7 @@ By: AkshatKumar Nigam, Robert Pollice, Alán Aspuru-Guzik
 <img align="center" src="./aux/logo.png"/>
 
 ## Package Requirements: 
-- [SELFIES](https://github.com/aspuru-guzik-group/selfies) - 
-  The code was run with v0.1.1 (which is the fastest), however, the code is compatible with any version. 
+- [SELFIES](https://github.com/aspuru-guzik-group/selfies)
 - [RDKit](https://www.rdkit.org/docs/Install.html)
 - [Pytorch](https://pytorch.org/)
 - [Python 3.0 or up](https://www.python.org/download/releases/3.0/)
