@@ -12,6 +12,7 @@ def generate_params():
     params_ = {}
     params_['generations'] = 200
     params_['generation_size'] = 5000
+    params_['start_population'] = './DATA/sample_start_smiles.txt'
 
     
     

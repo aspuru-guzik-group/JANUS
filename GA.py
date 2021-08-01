@@ -135,15 +135,17 @@ if __name__ == '__main__':
     
     params_ = generate_params()
     start_time = time.time()
-    with open('./DATA/guacamol_v1_train.smiles', 'r') as f: 
-        guac_smiles = f.readlines()
+    with open(params_['start_population'], 'r') as f: 
+        init_smiles = f.readlines()
     
-    guac_smiles = [x.strip() for x in guac_smiles][0: 5000] # TODO! 
-    fp_scores_guac     = [calc_prop(smi) for smi in guac_smiles]
+
+    
+    init_smiles = [x.strip() for x in init_smiles]
+    fp_scores_guac     = [calc_prop(smi) for smi in init_smiles]
     fp_scores_guac_idx = np.argsort(fp_scores_guac)[::-1]
-    print('Fp calc time: ', time.time()-start_time)
+    print('Initial population obtained!')
     
-    initial_mol = [guac_smiles[i] for i in fp_scores_guac_idx]
+    initial_mol = [init_smiles[i] for i in fp_scores_guac_idx]
     with open('./RESULTS/' + 'init_mols.txt', 'w') as f: 
         f.writelines([ '{} \n'.format(x) for x in initial_mol])
     
