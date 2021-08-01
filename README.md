@@ -17,6 +17,12 @@ The code can be run using:
 ```
 python ./JANUS.py
 ```  
+Within setup.py, a user has the option to provide: 
+1. A function for calculting property values (see function calc_prop). 
+2. Input parameters that are to be used by JANUS (see function generate_params). Initial parameters are provided. These are picked based on prior 
+   experience by the authors of the paper.
+
+
 ## Paper Results/Reproducibility: 
 Our code and results for each experiment in the paper can be found here: 
 * Experiment 4.1: https://drive.google.com/file/d/1rscIyzpTvtyiEkoP1WsF-XtSHJGQStUU/view?usp=sharing
