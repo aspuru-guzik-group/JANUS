@@ -29,17 +29,29 @@ from setup import calc_prop, generate_params
 from NN import train_and_save_model, obtain_new_pred
 
 
-def sanitize_smiles(smi):
-    '''Return a canonical smile representation of smi
-    
-    Parameters:
-    smi (string) : smile string to be canonicalized 
-    
-    Returns:
-    mol (rdkit.Chem.rdchem.Mol) : RdKit mol object                          (None if invalid smile string smi)
-    smi_canon (string)          : Canonicalized smile representation of smi (None if invalid smile string smi)
-    conversion_successful (bool): True/False to indicate if conversion was  successful 
+def sanitize_smiles(smi):    
     '''
+    Return a canonical smile representation of smi 
+    
+    NOTE: 
+        If the objective is to minimize the property value, please add a minus sign to 
+        the property value. 
+
+    Parameters
+    ----------
+    smi : str
+        smile string to be canonicalized 
+
+    Returns
+    -------
+    mol (rdkit.Chem.rdchem.Mol) : 
+        RdKit mol object (None if invalid smile string smi)
+    smi_canon (string)          : 
+        Canonicalized smile representation of smi (None if invalid smile string smi)
+    conversion_successful (bool): 
+        True/False to indicate if conversion was  successful 
+    '''
+    
     try:
         mol = smi2mol(smi, sanitize=True)
         smi_canon = mol2smi(mol, isomericSmiles=False, canonical=True)
@@ -49,6 +61,22 @@ def sanitize_smiles(smi):
 
 
 def get_fp_scores(smiles_back, target_smi): 
+    '''
+    Given a list of SMILES (smiles_back), tanimoto similarities are calculated 
+    (using Morgan fingerprints) to SMILES (target_smi). 
+
+    Parameters
+    ----------
+    smiles_back : (list)
+        List of valid SMILE strings. 
+    target_smi : (str)
+        Valid SMILES string. 
+
+    Returns
+    -------
+    smiles_back_scores : (list of floats)
+        List of figerprint similarity scores of each smiles in input list. 
+    '''
     smiles_back_scores = []
     target    = Chem.MolFromSmiles(target_smi)
     fp_target = AllChem.GetMorganFingerprint(target, 2)
@@ -61,6 +89,27 @@ def get_fp_scores(smiles_back, target_smi):
 
 
 def get_good_bad_smiles(fitness, population, generation_size): 
+    '''
+    Given fitness values of all SMILES in population, and the generation size, 
+    this function smplits  the population into two lists: keep_smiles & replace_smiles. 
+    
+    Parameters
+    ----------
+    fitness : (list of floats)
+        List of floats representing properties for molecules in population.
+    population : (list of SMILES)
+        List of all SMILES in each generation.
+    generation_size : (int)
+        Number of molecules in each generation.
+
+    Returns
+    -------
+    keep_smiles : (list of SMILES)
+        A list of SMILES that will be untouched for the next generation. .
+    replace_smiles : (list of SMILES)
+        A list of SMILES that will be mutated/crossed-oved for forming the subsequent generation.
+
+    '''
     
     fitness             = np.array(fitness)
     idx_sort            = fitness.argsort()[::-1] # Best -> Worst
@@ -265,7 +314,7 @@ if __name__ == '__main__':
 
         fp_scores          = get_fp_scores(mut_smi_dict_local, population[top_idx])
         fp_sort_idx        = np.argsort(fp_scores)[::-1][: generation_size]
-        mut_smi_dict_local_calc = [mut_smi_dict_local[i] for i in fp_sort_idx] # TODO: LOCAL SEARCH!!
+        mut_smi_dict_local_calc = [mut_smi_dict_local[i] for i in fp_sort_idx]
         
         
         # STEP 4: CALCULATE THE FITNESS FOR THE LOCAL SEARCH: 
@@ -292,7 +341,7 @@ if __name__ == '__main__':
             else: 
                 smiles_collector[item] = [smiles_collector[item][0], smiles_collector[item][1]+1]
         
-        # TODO: For the NN! 
+        # For the NN! 
         mut_smi_dict_local_remain = [x for x in mut_smi_dict_local if x not in mut_smi_dict_local_calc]
         
         # Logging: 
