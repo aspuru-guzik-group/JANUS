@@ -5,20 +5,17 @@ Created on Sat Jul 31 16:39:03 2021
 
 @author: akshat
 """
-import random
 import numpy as np
 import rdkit
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.DataStructs.cDataStructs import TanimotoSimilarity
-from rdkit import RDLogger
-RDLogger.DisableLog('rdApp.*')
-import pandas as pd
-import dask.dataframe as dd
-import selfies
+
 from selfies import encoder, decoder
 import multiprocessing
 
+from rdkit import RDLogger
+RDLogger.DisableLog('rdApp.*')
 
 manager = multiprocessing.Manager()
 lock = multiprocessing.Lock()
