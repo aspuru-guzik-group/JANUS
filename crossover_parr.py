@@ -20,6 +20,7 @@ RDLogger.DisableLog('rdApp.*')
 manager = multiprocessing.Manager()
 lock = multiprocessing.Lock()
 
+
 def get_selfie_chars(selfie):
     '''Obtain a list of all selfie characters in string selfie
     
@@ -30,8 +31,11 @@ def get_selfie_chars(selfie):
     >>> get_selfie_chars('[C][=C][C][=C][C][=C][Ring1][Branch1_1]')
     ['[C]', '[=C]', '[C]', '[=C]', '[C]', '[=C]', '[Ring1]', '[Branch1_1]']
     
-    Returns:
-    chars_selfie: list of selfie characters present in molecule selfie
+    Returns
+    -------
+    chars_selfie (list of strings) : 
+        list of selfie characters present in molecule selfie
+ 
     '''
     chars_selfie = [] # A list of all SELFIE sybols from string selfie
     while selfie != '':
@@ -39,7 +43,24 @@ def get_selfie_chars(selfie):
         selfie = selfie[selfie.find(']')+1:]
     return chars_selfie
 
+
 def get_fp_scores(smiles_back, target_smi): 
+    '''
+    Given a list of SMILES (smiles_back), tanimoto similarities are calculated 
+    (using Morgan fingerprints) to SMILES (target_smi). 
+
+    Parameters
+    ----------
+    smiles_back : (list of str)
+        List of valid SMILE strings. 
+    target_smi : (str)
+        Valid SMILES string. 
+
+    Returns
+    -------
+    smiles_back_scores : (list of floats)
+        List of figerprint similarity scores of each smiles in input list. 
+    '''
     smiles_back_scores = []
     target    = Chem.MolFromSmiles(target_smi)
     fp_target = AllChem.GetMorganFingerprint(target, 2)
@@ -50,7 +71,26 @@ def get_fp_scores(smiles_back, target_smi):
         smiles_back_scores.append(score)
     return smiles_back_scores
 
+
 def get_joint_sim(all_smiles, starting_smile, target_smile): 
+    '''
+    Get joint similarity values for all smiles in all_smiles, calculated with 
+    refernce to starting_smile & target_smile. 
+
+    Parameters
+    ----------
+    all_smiles : (list of string)
+        List of SMILE strings.
+    starting_smile : (str)
+        Input smiles string.
+    target_smile : (str)
+        Input smiles string.
+
+    Returns
+    -------
+    better_score : (list of floats)
+        List of joint similarity scores for all smiles in all_smiles.
+    '''
     scores_start  = get_fp_scores(all_smiles, starting_smile)   # similarity to target
     scores_target = get_fp_scores(all_smiles, target_smile)     # similarity to starting structure
     data          = np.array([scores_target, scores_start])
@@ -61,7 +101,23 @@ def get_joint_sim(all_smiles, starting_smile, target_smile):
     
     return better_score
 
-def obtain_path(starting_smile, target_smile, filter_path=False): 
+
+def obtain_path(starting_smile, target_smile): 
+    '''
+    Create a single path between molecules starting_smile and target_smile. 
+
+    Parameters
+    ----------
+    starting_smile : (str)
+        Valid SMILES string.
+    target_smile : (str)
+        Valid SMILES string.
+
+    Returns
+    -------
+    path_smiles : (list of str)
+        List of all smiles strings encountered while creating a path.
+    '''
     starting_selfie = encoder(starting_smile)
     target_selfie   = encoder(target_smile)
     
@@ -99,14 +155,28 @@ def obtain_path(starting_smile, target_smile, filter_path=False):
         
     if paths_selfies[-1] != target_selfie: 
         raise Exception("Unable to discover target structure!")
-    
     path_smiles         = [decoder(x) for x in paths_selfies]
 
     return path_smiles
 
+
 def perform_crossover(comb_smi, num_random_samples): 
-    
-    # print('COMB SMI IS: ', comb_smi)
+    '''
+    Create multiple paths between SMILES in comb_smi to obtain median molecules, 
+    representing the crossover structure. 
+
+    Parameters
+    ----------
+    comb_smi : (str)
+        Two smiles string concatenated using xxx (example: CCCCCCxxxSSS).
+    num_random_samples : (int)
+        Number of different smiles orientations to consider while forming paths. 
+
+    Returns
+    -------
+    collect_smiles_canon : (list of SMILES)
+        List of all potential unique median molecules enoucntered during path formation.
+    '''
     smi_a, smi_b = comb_smi.split('xxx')
     mol_a, mol_b = Chem.MolFromSmiles(smi_a), Chem.MolFromSmiles(smi_b)
     Chem.Kekulize(mol_a)
@@ -139,8 +209,23 @@ def perform_crossover(comb_smi, num_random_samples):
 
     return collect_smiles_canon
 
+
 def crossover_smiles(smiles_join): 
-    
+    '''
+    Return a list of smiles (crossover molecules) that are ordered (highest to lowest)
+    by joint similarity scores. 
+
+    Parameters
+    ----------
+    smiles_join : (str)
+        Two smiles string concatenated using xxx (example: CCCCCCxxxSSS).
+
+    Returns
+    -------
+    med_all_ord : (list of SMILES)
+        List of crossover molecules that are ordered (highest to lowest)
+        by joint similarity scores.
+    '''
     map_ = {}
 
     map_[smiles_join] = perform_crossover(smiles_join, num_random_samples=1)
@@ -155,15 +240,28 @@ def crossover_smiles(smiles_join):
         joint_sim_ord = joint_sim_ord[::-1]
         
         med_all_ord = [med_all[i] for i in joint_sim_ord]
-        # map_ordered[key_] = med_all_ord
 
     return med_all_ord
     
     
 def get_chunks(arr, num_processors, ratio):
-    """
-    Get chunks based on a list 
-    """
+    '''
+    Split list of SMILES int sublists, each of which will be operated on seperate cpus. 
+
+    Parameters
+    ----------
+    arr : (list of sts)
+        A list of SMILES.
+    num_processors : (int)
+        Number of cpus available for conducting operation.
+    ratio : (int)
+        number of operations that will be performed on each cpu.
+
+    Returns
+    -------
+    chunks: (list of lists)
+        Each sublist is used by a different cpu to perform operations. 
+    '''
     chunks = []  # Collect arrays that will be sent to different processorr 
     counter = int(ratio)
     for i in range(num_processors):
@@ -178,15 +276,29 @@ def get_chunks(arr, num_processors, ratio):
 
 
 def calc_parr_prop(unseen_smile_ls, property_name, props_collect):
-    '''Calculate logP for each molecule in unseen_smile_ls, and record results
-       in locked dictionary props_collect 
+    '''Create crossover structures for each molecule in unseen_smile_ls, and record results
+       in locked dictionary props_collect.  
     '''
     for smile_join in unseen_smile_ls: 
-        props_collect[property_name][smile_join] = crossover_smiles(smile_join)  # TODO: TESTING
+        props_collect[property_name][smile_join] = crossover_smiles(smile_join) 
 
 
 def create_parr_process(chunks, property_name):
-    ''' Create parallel processes for calculation of properties
+    '''
+    Create parallel processes for creating crossover molecules for molecule in sublist chunks. 
+
+    Parameters
+    ----------
+    chunks : (list of list)
+        list of lists containing SMILES.
+    property_name : (syr)
+        optional name paramtere to enter.
+
+    Returns
+    -------
+    combined_dict : (dict)
+        input smiles -> [List of crossover smiles].
+
     '''
     process_collector    = []
     collect_dictionaries = []
@@ -213,11 +325,21 @@ def create_parr_process(chunks, property_name):
     return combined_dict
 
 
-
-    
-    
 def crossover_smiles_parr(smiles_join): 
-    
+    '''
+    Generate crossover smiles for peach pair of smiles in smiles_join. 
+
+    Parameters
+    ----------
+    smiles_join : list of strings. 
+        List of two smiles string concatenated using xxx (example: CCCCCCxxxSSS).
+
+    Returns
+    -------
+    A : (dictionary)
+        A map smiles -> [List of crossover molecules].
+
+    '''
     num_processors        = multiprocessing.cpu_count()
     molecules_here_unique = smiles_join  
     ratio            = len(molecules_here_unique) / num_processors 
@@ -231,4 +353,3 @@ def crossover_smiles_parr(smiles_join):
     
     
     
-
