@@ -27,8 +27,10 @@ def get_selfie_chars(selfie):
     >>> get_selfie_chars('[C][=C][C][=C][C][=C][Ring1][Branch1_1]')
     ['[C]', '[=C]', '[C]', '[=C]', '[C]', '[=C]', '[Ring1]', '[Branch1_1]']
     
-    Returns:
-    chars_selfie: list of selfie characters present in molecule selfie
+    Returns
+    -------
+    chars_selfie (list of strings) : 
+        list of selfie characters present in molecule selfie
     '''
     chars_selfie = [] # A list of all SELFIE sybols from string selfie
     while selfie != '':
@@ -38,11 +40,23 @@ def get_selfie_chars(selfie):
 
 def mutate_sf(sf_chars, alphabet): 
     '''
-    Provided a list of SELFIE characters, this function will return a modified 
-    SELFIES. 
+    Given a list of SELFIES alphabets, make random changes to the molecule using 
+    alphabet. Opertations to molecules are character replacements, additions and deletions. 
+
+    Parameters
+    ----------
+    sf_chars : (list of string alphabets)
+        List of string alphabets for a SELFIE string.
+    alphabet : (list of SELFIE strings)
+        Replacements and addition operations are performed using this list of SELFIE strings.
+
+    Returns
+    -------
+    Muatted SELFIE string.
+
     '''
     random_char_idx = random.choice(range(len(sf_chars)))
-    choices_ls = [1, 2, 3] # TODO: 1 = mutate; 2 = addition; 3=delete
+    choices_ls = [1, 2, 3] # 1 = replacement; 2 = addition; 3=delete
     mutn_choice = choices_ls[random.choice(range(len(choices_ls)))] # Which mutation to do: 
         
     if alphabet != []: 
@@ -70,7 +84,27 @@ def mutate_sf(sf_chars, alphabet):
     return ''.join(x for x in change_sf)
 
 
-def get_prop_material(smile, alphabet, num_random_samples, num_mutations):    
+def get_prop_material(smile, alphabet, num_random_samples, num_mutations): 
+    '''
+    
+
+    Parameters
+    ----------
+    smile : TYPE
+        DESCRIPTION.
+    alphabet : TYPE
+        DESCRIPTION.
+    num_random_samples : TYPE
+        DESCRIPTION.
+    num_mutations : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    mutated_smiles_canon : TYPE
+        DESCRIPTION.
+
+    '''
     mol = Chem.MolFromSmiles(smile)
     Chem.Kekulize(mol)
     

@@ -35,7 +35,6 @@ def get_selfie_chars(selfie):
     -------
     chars_selfie (list of strings) : 
         list of selfie characters present in molecule selfie
- 
     '''
     chars_selfie = [] # A list of all SELFIE sybols from string selfie
     while selfie != '':
