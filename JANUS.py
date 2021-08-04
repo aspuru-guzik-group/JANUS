@@ -32,10 +32,6 @@ from NN import train_and_save_model, obtain_new_pred
 def sanitize_smiles(smi):    
     '''
     Return a canonical smile representation of smi 
-    
-    NOTE: 
-        If the objective is to minimize the property value, please add a minus sign to 
-        the property value. 
 
     Parameters
     ----------

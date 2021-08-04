@@ -86,24 +86,25 @@ def mutate_sf(sf_chars, alphabet):
 
 def get_prop_material(smile, alphabet, num_random_samples, num_mutations): 
     '''
-    
+    Given an input smile, perform mutations to the strucutre using provided SELFIE
+    alphabet list. 'num_random_samples' number of different SMILES orientations are 
+    considered & total 'num_mutations' are performed. 
 
     Parameters
     ----------
-    smile : TYPE
-        DESCRIPTION.
-    alphabet : TYPE
-        DESCRIPTION.
-    num_random_samples : TYPE
-        DESCRIPTION.
+    smile : (str)
+        Valid SMILES string.
+    alphabet : (list of str)
+        list of SELFIE strings.
+    num_random_samples : (int)
+        Number of different SMILES orientations to be formed for the input smile.
     num_mutations : TYPE
-        DESCRIPTION.
+        Number of mutations to perform on each of different orientations SMILES.
 
     Returns
     -------
-    mutated_smiles_canon : TYPE
-        DESCRIPTION.
-
+    mutated_smiles_canon : (list of strings)
+        List of unique molecules produced from mutations.
     '''
     mol = Chem.MolFromSmiles(smile)
     Chem.Kekulize(mol)
@@ -140,15 +141,22 @@ def get_prop_material(smile, alphabet, num_random_samples, num_mutations):
 
     
 def sanitize_smiles(smi):
-    '''Return a canonical smile representation of smi
-    
-    Parameters:
-    smi (string) : smile string to be canonicalized 
-    
-    Returns:
-    mol (rdkit.Chem.rdchem.Mol) : RdKit mol object                          (None if invalid smile string smi)
-    smi_canon (string)          : Canonicalized smile representation of smi (None if invalid smile string smi)
-    conversion_successful (bool): True/False to indicate if conversion was  successful 
+    '''
+    Return a canonical smile representation of smi 
+
+    Parameters
+    ----------
+    smi : str
+        smile string to be canonicalized 
+
+    Returns
+    -------
+    mol (rdkit.Chem.rdchem.Mol) : 
+        RdKit mol object (None if invalid smile string smi)
+    smi_canon (string)          : 
+        Canonicalized smile representation of smi (None if invalid smile string smi)
+    conversion_successful (bool): 
+        True/False to indicate if conversion was  successful 
     '''
     try:
         mol = smi2mol(smi, sanitize=True)
@@ -159,9 +167,23 @@ def sanitize_smiles(smi):
     
     
 def get_chunks(arr, num_processors, ratio):
-    """
-    Get chunks based on a list 
-    """
+    '''
+    Split list of SMILES int sublists, each of which will be operated on seperate cpus. 
+
+    Parameters
+    ----------
+    arr : (list of sts)
+        A list of SMILES.
+    num_processors : (int)
+        Number of cpus available for conducting operation.
+    ratio : (int)
+        number of operations that will be performed on each cpu.
+
+    Returns
+    -------
+    chunks: (list of lists)
+        Each sublist is used by a different cpu to perform operations. 
+    '''
     chunks = []  # Collect arrays that will be sent to different processorr 
     counter = int(ratio)
     for i in range(num_processors):
@@ -184,7 +206,21 @@ def calc_parr_prop(unseen_smile_ls, property_name, props_collect, num_random_sam
 
 
 def create_parr_process(chunks, alphabet, property_name, num_random_samples, num_mutations):
-    ''' Create parallel processes for calculation of properties
+    '''
+    Create parallel processes for creating mutating molecules for molecule in sublist chunks. 
+
+    Parameters
+    ----------
+    chunks : (list of list)
+        list of lists containing SMILES.
+    property_name : (syr)
+        optional name paramtere to enter.
+
+    Returns
+    -------
+    combined_dict : (dict)
+        input smiles -> [List of mutated smiles].
+
     '''
     process_collector    = []
     collect_dictionaries = []
