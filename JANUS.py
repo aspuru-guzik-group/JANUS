@@ -25,7 +25,7 @@ RDLogger.DisableLog('rdApp.*')
 import warnings
 warnings.filterwarnings("ignore")
 
-from setup import calc_prop, generate_params
+from params_init import calc_prop, generate_params
 from NN import train_and_save_model, obtain_new_pred
 
 
