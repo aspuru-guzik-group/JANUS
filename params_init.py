@@ -32,11 +32,11 @@ def generate_params():
     # An option to generate fragments and use then when performing mutations. 
     # Fragmenets are generated using the SMILES provided for the starting population. 
     # The list of generated fragments is stored in './DATA/fragments_selfies.txt'
-    params_['use_fragments']      = True # TODO; Set to true
+    params_['use_fragments']      = True # Set to true
     
     # An option to use a classifier for sampling. If set to true, the trailed model 
     # is saved at the end of every generation in './RESULTS/'. 
-    params_['use_NN_classifier']  = True # TODO: Set this to true! 
+    params_['use_NN_classifier']  = True # Set this to true! 
     
     return params_
 
