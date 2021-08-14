@@ -42,6 +42,7 @@ The following files will be created:
 Our code and results for each experiment in the paper can be found here: 
 * Experiment 4.1: https://drive.google.com/file/d/1rscIyzpTvtyiEkoP1WsF-XtSHJGQStUU/view?usp=sharing
 * Experiment 4.3: https://drive.google.com/file/d/1tlIdfSWwzVeJ5kZ98l8G6osE9zf9wP1f/view?usp=sharing
+* GuacaMol: https://drive.google.com/file/d/1FqetwNg6VVc-C3eiPoosGZ4-47WpYBAt/view?usp=sharing
 
 
 ## Questions, problems?
