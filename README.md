@@ -5,7 +5,7 @@ By: AkshatKumar Nigam, Robert Pollice, Alán Aspuru-Guzik
 <img align="center" src="./aux/logo.png"/>
 
 ## Package Requirements: 
-- [SELFIES](https://github.com/aspuru-guzik-group/selfies)
+- [SELFIES](https://github.com/aspuru-guzik-group/selfies) [version '1.0.3']
 - [RDKit](https://www.rdkit.org/docs/Install.html)
 - [Pytorch](https://pytorch.org/)
 - [Python 3.0 or up](https://www.python.org/download/releases/3.0/)
