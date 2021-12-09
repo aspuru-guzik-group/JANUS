@@ -2,7 +2,7 @@
 This repository contains code for the paper: [JANUS: Parallel Tempered Genetic Algorithm Guided by Deep Neural Networks for Inverse Molecular Design](https://arxiv.org/abs/2106.04011). 
 By: AkshatKumar Nigam, Robert Pollice, Alán Aspuru-Guzik 
 
-<img align="center" src="./aux/logo.png"/>
+<img align="center" src="./aux_files/logo.png"/>
 
 ## Package Requirements: 
 - [SELFIES](https://github.com/aspuru-guzik-group/selfies) [version '1.0.3']
