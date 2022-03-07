@@ -6,10 +6,10 @@ By: AkshatKumar Nigam, Robert Pollice, Alán Aspuru-Guzik
 
 ## Package Requirements: 
 - [SELFIES](https://github.com/aspuru-guzik-group/selfies) [version '1.0.3']
-- [RDKit](https://www.rdkit.org/docs/Install.html)
-- [Pytorch](https://pytorch.org/)
+- [RDKit](https://www.rdkit.org/docs/Install.html) [version '2020.03.4']
+- [Pytorch](https://pytorch.org/) [version '1.10.2']
 - [Python 3.0 or up](https://www.python.org/download/releases/3.0/)
-- [numpy](https://pypi.org/project/numpy/)
+- [numpy](https://pypi.org/project/numpy/) [version '1.19.5']
 
 ## Using The Code: 
 The code can be run using: 
