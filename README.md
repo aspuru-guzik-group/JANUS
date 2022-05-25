@@ -1,28 +1,69 @@
 # JANUS: Parallel Tempered Genetic Algorithm Guided by Deep Neural Networks for Inverse Molecular Design
 This repository contains code for the paper: [JANUS: Parallel Tempered Genetic Algorithm Guided by Deep Neural Networks for Inverse Molecular Design](https://arxiv.org/abs/2106.04011). 
-By: AkshatKumar Nigam, Robert Pollice, Alán Aspuru-Guzik 
+
+Originally by: AkshatKumar Nigam, Robert Pollice, Alán Aspuru-Guzik 
+
+Updated by: Gary Tom
 
 <img align="center" src="./aux_files/logo.png"/>
 
-## Package Requirements: 
-- [SELFIES](https://github.com/aspuru-guzik-group/selfies) [version '1.0.3']
-- [RDKit](https://www.rdkit.org/docs/Install.html) [version '2020.03.4']
-- [Pytorch](https://pytorch.org/) [version '1.10.2']
-- [Python 3.0 or up](https://www.python.org/download/releases/3.0/)
-- [numpy](https://pypi.org/project/numpy/) [version '1.19.5']
 
-## Using The Code: 
-The code can be run using: 
+## Prerequsites: 
+
+Use [Python 3.7 or up](https://www.python.org/download/releases/3.0/).
+
+You will need to separately install [RDKit](https://www.rdkit.org/docs/Install.html) version >= 2020.03.1. The easiest is to do this on conda.
+
+JANUS uses [SELFIES](https://github.com/aspuru-guzik-group/selfies) version 1.0.3. If you want to use a different version, pip install your desired version; this package will still be compatible. Note that you will have to change your input alphabets to work with other versions of SELFIES.
+
+
+## Major changes:
+
+- Support the use of any version of SELFIES (please check your installation).
+- Improved multiprocessing.
+- GPU acceleration of neural networks.
+- Early stopping for classifier. 
+- Included SMILES filtering option.
+- Additional hyperparameters for controlling JANUS. Defaults used in paper are given in `tests` directory.
+
+## How to run: 
+
+Install JANUS using 
+
+```bash
+pip install janus-ga
 ```
-python ./JANUS.py
-```  
-Within params_init.py, a user has the option to provide: 
-1. A function for calculting property values (see function calc_prop). 
-2. Input parameters that are to be used by JANUS (see function generate_params). Initial parameters are provided. These are picked based on prior 
-   experience by the authors of the paper.
 
-## Output Generation: 
-All results from running JANUS will be stored here. 
+Example script of how to use JANUS is found in [tests/example.py](tests/example.py). You can run the file with
+
+```bash
+cd tests
+python ./example.py
+```
+
+Within this file are examples for: 
+1. A function for calculting property values (see function `fitness_function`). 
+2. Custom filtering of SMILES (see function `custom_filter`).
+3. Initializing JANUS from dictionary of parameters.
+4. Generating hyperparameters from provided yaml file (see function `janus.utils.from_yaml`).
+
+Important parameters the user should provide:
+- `work_dir`: directory for outputting results
+- `fitness_function`: fitness function defined for an input smiles that will be maximized
+- `start_population`: path to text file of starting smiles one each new line
+- `generations`: number if evolution iterations to perform
+- `generation_size`: number of molecules in the populations per generation
+- `custom_filter`: filter function checked after mutation and crossover, returns `True` for accepted molecules
+- `use_fragments`: toggle adding fragments from starting population to mutation alphabet
+- `use_classifier`: toggle using classifier for selection bias
+
+See [tests/default_params.yml](tests/default_params.yml) for detailed description of adjustable parameters.
+
+
+## Outputs: 
+
+All results from running JANUS will be stored in specified `work_dir`. 
+
 The following files will be created: 
 1. fitness_explore.txt: 
    Fitness values for all molecules from the exploration component of JANUS.    
@@ -36,12 +77,13 @@ The following files will be created:
    SMILES for all molecules from the exploration component of JANUS. 
 6. population_local_search.txt: 
    SMILES for all molecules from the exploitation component of JANUS. 
+7. hparams.json:
+   Hyperparameters used for initializing JANUS.
 
 
 ## Paper Results/Reproducibility: 
 Our code and results for each experiment in the paper can be found here: 
 * Experiment 4.1: https://drive.google.com/file/d/1rscIyzpTvtyiEkoP1WsF-XtSHJGQStUU/view?usp=sharing
-* Experiment 4.2: https://drive.google.com/file/d/140fL-qBFpEvEV_A7Awmm0C1fMRrILgHX/view?usp=sharing
 * Experiment 4.3: https://drive.google.com/file/d/1tlIdfSWwzVeJ5kZ98l8G6osE9zf9wP1f/view?usp=sharing
 * GuacaMol: https://drive.google.com/file/d/1FqetwNg6VVc-C3eiPoosGZ4-47WpYBAt/view?usp=sharing
 

@@ -1,0 +1,91 @@
+# Default parameters saved in YAML format. 
+
+### START OF PARAMETERS ###
+# Record data from every generation in individual directories
+verbose_out: false
+
+# Set computational resources available
+use_gpu: true
+
+# Number of parallel processes (None defualts to cpu count)
+num_workers: null
+
+# Number of iterations that JANUS runs for
+generations: 200
+
+# The number of molecules for which fitness calculations are done, 
+# exploration and exploitation each have their own population
+generation_size: 5000
+
+# Number of molecules that are exchanged between the exploration and exploitation
+num_exchanges: 5
+
+# Base alphabet used for mutations (None/null defaults to semantic robust alphabet)
+# Below is for SELFIES v1.0.3, same as used in manuscript
+alphabet:
+- '[=N]'
+- '[C]'
+- '[S]'
+- '[Branch3_1]'
+- '[Expl=Ring3]'
+- '[Branch1_1]'
+- '[Branch2_2]'
+- '[Ring1]'
+- '[#P]'
+- '[O]'
+- '[Branch2_1]'
+- '[N]'
+- '[=O]'
+- '[P]'
+- '[Expl=Ring1]'
+- '[Branch3_2]'
+- '[I]'
+- '[Expl=Ring2]'
+- '[=P]'
+- '[Branch1_3]'
+- '[#C]'
+- '[Cl]'
+- '[=C]'
+- '[=S]'
+- '[Branch1_2]'
+- '[#N]'
+- '[Branch2_3]'
+- '[Br]'
+- '[Branch3_3]'
+- '[Ring3]'
+- '[Ring2]'
+- '[F]'
+
+# Callable filtering function (None/null defaults to no filtering)
+custom_filter: null
+
+# Fragments from starting population used to extend alphabet for mutations
+use_fragments: true
+
+# Number of randomly sampled SELFIE strings from alphabet to use in mutation
+num_sample_frags: 200
+
+# An option to use a classifier for sampling
+use_classifier: true
+
+### Exploration ###
+# Number of samples from random mutations in exploration population
+explr_num_random_samples: 5
+# Number of random mutations in exploration population
+explr_num_mutations: 5
+# Number of random crossovers
+crossover_num_random_samples: 1
+
+### Exploitation ###
+# Number of samples from random mutations in exploitation population
+exploit_num_random_samples: 400
+# Number of random mutations in exploitation population
+exploit_num_mutations: 400
+# Number of top molecules to conduct local search
+top_mols: 1
+
+
+
+
+
+
