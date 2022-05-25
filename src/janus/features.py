@@ -1,29 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jul 31 19:25:08 2021
-
-@author: akshat
-"""
-import os
 import numpy as np
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import inspect
 import rdkit
 from rdkit import Chem
 from rdkit import RDLogger
 from rdkit.Chem import Descriptors
-RDLogger.DisableLog('rdApp.*')
-
-import inspect
 from collections import OrderedDict
-
-import multiprocessing
-manager = multiprocessing.Manager()
-lock = multiprocessing.Lock()
-
-
+RDLogger.DisableLog('rdApp.*')
 
 def get_rot_bonds_posn(mol):
     '''Return atom indices with Rotatable bonds 
@@ -76,11 +58,12 @@ def obtain_rings(smi):
     new_smile = Chem.MolToSmiles(new_mol)
     
     smile_split_list = new_smile.split(".") 
-    rings = []
+    ring_smiles = []
     for item in smile_split_list:
-        if '1' in item:
-            rings.append(item)
-    return rings 
+        if '1' in item and Chem.MolFromSmiles(item) is not None:
+            ring_smiles.append(item)
+    
+    return ring_smiles 
 
 
 def count_atoms(mol, atomic_num):
@@ -183,7 +166,7 @@ def size_ring_counter(ring_ls):
         conseq_dbl_bnd_in_ring += count_conseq_double(item)
     ring_counter.append(conseq_dbl_bnd_in_ring) # concatenate onto list ring_counter
     
-    # Count the number of consequtive double bonds in rings 
+    # Count size of rings
     for i in range(3, 21):
         count = 0
         for mol_ring in mol_ring_ls:
@@ -191,9 +174,8 @@ def size_ring_counter(ring_ls):
                 count += 1
         ring_counter.append(count)
     return ring_counter
-            
 
-
+    
 def get_mol_info(smi):                 
     ''' Calculate a set of 51 RdKit properties, collected from above helper functions. 
     
@@ -223,7 +205,7 @@ def get_mol_info(smi):
                      num_sulphur/num_carbon, num_oxy/num_carbon, num_clorine/num_carbon,
                      num_bromine/num_carbon, num_florine/num_carbon]
     
-    to_caculate = ["RingCount", "HallKierAlpha", "BalabanJ", "NumAliphaticCarbocycles","NumAliphaticHeterocycles",
+    to_calculate = ["RingCount", "HallKierAlpha", "BalabanJ", "NumAliphaticCarbocycles","NumAliphaticHeterocycles",
                    "NumAliphaticRings","NumAromaticCarbocycles","NumAromaticHeterocycles",
                    "NumAromaticRings","NumHAcceptors","NumHDonors","NumHeteroatoms",
                    "NumRadicalElectrons","NumSaturatedCarbocycles","NumSaturatedHeterocycles",
@@ -235,9 +217,17 @@ def get_mol_info(smi):
         if key.startswith('_'):
             del calc_props[key]
             continue
-        if len(to_caculate)!=0 and key not in to_caculate:
+        if len(to_calculate)!=0 and key not in to_calculate:
             del calc_props[key]
-    features = [val(mol) for key,val in calc_props.items()] # List of properties 
+    # features = [val(mol) for key,val in calc_props.items()] # List of properties 
+
+    features = []
+    for key, val in calc_props.items():
+        try:
+            features.append(val(mol))
+        except:
+            print(f'Failed at: {val}')
+            print(f'Failed at: {Chem.MolToSmiles(mol)}')
     
     
     # Ratio of total number of  (single, double, triple, aromatic) bonds to the total number of bonds. 
@@ -246,16 +236,16 @@ def get_mol_info(smi):
     # Obtain all rings in a molecule and calc. #of triple bonds in rings & #of rings in molecule 
     ring_ls = obtain_rings(smi)
     num_triple = 0      # num triple bonds in ring
-
     
-    if len(ring_ls) > 0 and ring_ls != (None, None):
+    if len(ring_ls) > 0 and ring_ls != (None, None): 
         for item in ring_ls:
             num_triple += item.count('#')
         simple_bond_info.append(len(ring_ls))     # append number of Rings in molecule 
-    else:   simple_bond_info.append(0)            # no rotatable bonds
+    else:   
+        simple_bond_info.append(0)                # no rotatable bonds
 
-        
     simple_bond_info.append(num_triple)          # number of triple bonds in rings
+
                                               
     # Calculate the number of rings of size 3 to 20 & number of conseq. double bonds in rings 
     simple_bond_info = simple_bond_info + size_ring_counter(ring_ls)
@@ -264,202 +254,3 @@ def get_mol_info(smi):
     simple_bond_info.append(count_conseq_double(mol)) 
     
     return np.array(features + basic_props + simple_bond_info)
-
-def get_mult_mol_info_parr(smiles_list, dataset_x):
-    ''' Record calculated rdkit property results for each smile in smiles_list,
-    and add record result in dictionary dataset_x.
-    '''
-    for smi in smiles_list:
-        dataset_x['properties_rdkit'][smi] = get_mol_info(smi)
-
-
-def get_chunks(arr, num_processors, ratio):
-    """
-    Get chunks based on a list 
-    """
-    chunks = []  # Collect arrays that will be sent to different processorr 
-    counter = int(ratio)
-    for i in range(num_processors):
-        if i == 0:
-            chunks.append(arr[0:counter])
-        if i != 0 and i<num_processors-1:
-            chunks.append(arr[counter-int(ratio): counter])
-        if i == num_processors-1:
-            chunks.append(arr[counter-int(ratio): ])
-        counter += int(ratio)
-    return chunks 
-
-def create_parr_process(chunks):
-    '''This function initiates parallel execution (based on the number of cpu cores)
-    to calculate all the properties mentioned in 'get_mol_info()'
-    
-    Parameters:
-    chunks (list)   : List of lists, contining smile strings. Each sub list is 
-                      sent to a different process
-    dataset_x (dict): Locked dictionary for recording results from different processes. 
-                      Locking allows communication between different processes. 
-                      
-    Returns:
-    None : All results are recorde in dictionary 'dataset_x'
-    '''
-    # Assign data to each process 
-    process_collector = []
-    collect_dictionaries = []
-    
-    for chunk in chunks:                # process initialization 
-        dataset_x         = manager.dict(lock=True)
-        smiles_map_props  = manager.dict(lock=True)
-
-        dataset_x['properties_rdkit'] = smiles_map_props
-        collect_dictionaries.append(dataset_x)
-        
-        process_collector.append(multiprocessing.Process(target=get_mult_mol_info_parr, args=(chunk, dataset_x,  )))
-
-    for item in process_collector:      # initite all process 
-        item.start()
-    
-    for item in process_collector:      # wait for all processes to finish
-        item.join()   
-    
-    combined_dict = {}
-    for i,item in enumerate(collect_dictionaries):
-        combined_dict.update(item['properties_rdkit'])
-
-    return combined_dict
-
-
-def obtain_discr_encoding(molecules_here, num_processors): 
-    dataset_x = []
-    for smi in molecules_here: 
-        dataset_x.append(get_mol_info(smi))
-    return np.array(dataset_x)
-    
-
-class Net(torch.nn.Module):
-    def __init__(self, n_feature, h_sizes, n_output):
-        super(Net, self).__init__()
-        # Layers
-        self.hidden = nn.ModuleList()
-        for k in range(len(h_sizes)-1):
-            self.hidden.append(nn.Linear(h_sizes[k], h_sizes[k+1]))
-        self.predict = torch.nn.Linear(h_sizes[-1], n_output)
-
-
-    def forward(self, x):
-        for layer in self.hidden:
-            x = torch.sigmoid(layer(x))
-        output= F.sigmoid(self.predict(x))
-
-        return output
-
-def create_discriminator(init_len, n_hidden, device):
-    """
-    Define an instance of the discriminator 
-    """
-    n_hidden.insert(0, init_len)
-
-    net = Net(n_feature=init_len, h_sizes=n_hidden, n_output=1).to(device)
-    optimizer = torch.optim.Adam(net.parameters(), lr=0.001, weight_decay=1e-4)
-    loss_func = torch.nn.BCELoss()
-    
-    return (net, optimizer, loss_func)
-
-
-
-def obtain_initial_discriminator(disc_layers, device):
-    ''' Obtain Discriminator initializer
-    
-    Parameters:
-    disc_enc_type        (str)  : (smile/selfie/properties_rdkit)
-                                  For calculating num. of features to be shown to discrm.
-    disc_layers,         (list) : Intermediate discrm layers (e.g. [100, 10])
-    device               (str)  : Device discrm. will be initialized 
-    
-    Returns:
-    discriminator : torch model
-    d_optimizer   : Loss function optimized (Adam)
-    d_loss_func   : Loss (Cross-Entropy )
-    '''
-    # Discriminator initialization 
-    discriminator, d_optimizer, d_loss_func = create_discriminator(51, disc_layers, device)  
-    
-    return discriminator, d_optimizer, d_loss_func
-
-
-
-def do_x_training_steps(data_x, data_y, net, optimizer, loss_func, steps, graph_x_counter, device):
-    
-    data_x = torch.tensor(data_x.astype(np.float32), device=device)
-    data_y = torch.tensor(data_y, device=device, dtype=torch.float)
-    
-    net.train()
-    for t in range(steps):
-        predictions = net(data_x)
-
-        loss = loss_func(predictions, data_y.reshape(len(data_y), 1))
-        
-        if t % 400 == 0: 
-            print('        Epoch:{} Loss:{}'.format(t, loss.item()))
-
-        optimizer.zero_grad()
-        loss.backward(retain_graph=True)
-        optimizer.step()
-
-    return net
-
-def save_model(model, generation_index, dir_name):
-    out_dir = './{}/{}'.format(dir_name, generation_index)
-    
-    if not os.path.isdir(out_dir): 
-        os.system('mkdir {}'.format(out_dir))   
-        
-    torch.save(model, out_dir+'/model')
-
-def load_saved_model(generation_index):
-    model = torch.load('./RESULTS/{}/model'.format(generation_index))
-    model = model.eval()
-    return model 
-
-def do_predictions(discriminator, data_x, device):
-    discriminator = discriminator.eval()
-    
-    data_x = torch.tensor(data_x.astype(np.float32), device=device)
-    
-    outputs = discriminator(data_x)
-    predictions = outputs.detach().cpu().numpy() # Return as a numpy array
-    return (predictions)
-
-
-def train_and_save_model(smiles_ls, pro_val, generation_index): 
-    dataset_x = obtain_discr_encoding(smiles_ls, num_processors=1) # multiprocessing.cpu_count()
-
-    avg_val = np.percentile(pro_val, 80) # np.average(pro_val)
-    dataset_y  = np.array([1 if x>=avg_val else 0 for x in pro_val ])
-    
-    disc_layers = [100, 10]
-    device      = 'cpu'
-    
-    discriminator, d_optimizer, d_loss_func = obtain_initial_discriminator(disc_layers, device)
-    discriminator = do_x_training_steps(data_x=dataset_x, data_y=dataset_y, net=discriminator, optimizer=d_optimizer, loss_func=d_loss_func, steps=2000, graph_x_counter=1, device=device)
-    
-    # Save discriminator after training 
-    save_model(discriminator, generation_index=generation_index, dir_name='RESULTS')
-    
-
-def obtain_new_pred(smiles_ls, generation_index): 
-
-
-    predictions = []
-    model = load_saved_model(generation_index=generation_index) 
-    
-    for i,smi in enumerate(smiles_ls): 
-        if i % 10000 == 0: 
-            print('        Predicting: {}/{}'.format(i, len(smiles_ls)))
-        data_x  = obtain_discr_encoding([smi], 1)
-        data_x  = torch.tensor(data_x.astype(np.float32), device='cpu')
-        outputs = model(data_x)
-        out_    = outputs.detach().cpu().numpy()
-        predictions.append(float(out_[0]))
-
-    return predictions
-
