@@ -131,12 +131,13 @@ class JANUS:
         else:
             raise ValueError('Invalid space, choose "local" or "explore".')
 
+        smi_list = smi_list * num_random_samples
         with multiprocessing.Pool(self.num_workers) as pool:
             mut_smi_list = pool.map(
                 partial(
                     mutate_smiles,
                     alphabet=self.frag_alphabet,
-                    num_random_samples=num_random_samples,
+                    num_random_samples=1,
                     num_mutations=num_mutations,
                     num_sample_frags=self.num_sample_frags,
                     base_alphabet=self.alphabet
@@ -324,10 +325,10 @@ class JANUS:
                     Filter may be too strict, or you need more mutations/crossovers.')
 
             # sort by similarity, only keep ones similar to best
-            fp_scores = get_fp_scores(mut_smi_loc, population_sort[0])
+            fp_scores = get_fp_scores(exploit_smiles, population_sort[0])
             fp_sort_idx = np.argsort(fp_scores)[::-1][: self.generation_size]
             # highest fp_score idxs
-            self.population_loc = np.array(mut_smi_loc)[
+            self.population_loc = np.array(exploit_smiles)[
                 fp_sort_idx
             ]  # list of smiles with highest fp scores
 

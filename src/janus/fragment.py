@@ -61,12 +61,16 @@ def form_fragments(smi):
             continue
         dec_ = decoder(sf)
 
-        m = Chem.MolFromSmiles(dec_)
-        Chem.Kekulize(m)
-        dearom_smiles = Chem.MolToSmiles(
-            m, canonical=False, isomericSmiles=False, kekuleSmiles=True
-        )
-        dearom_mol = Chem.MolFromSmiles(dearom_smiles)
+        try:
+            m = Chem.MolFromSmiles(dec_)
+            Chem.Kekulize(m)
+            dearom_smiles = Chem.MolToSmiles(
+                m, canonical=False, isomericSmiles=False, kekuleSmiles=True
+            )
+            dearom_mol = Chem.MolFromSmiles(dearom_smiles)
+        except:
+            continue
+
         if dearom_mol == None:
             raise Exception("mol dearom failes")
 
