@@ -79,7 +79,7 @@ class JANUS:
                 line = sanitize_smiles(line.strip())
                 if line is not None:
                     init_smiles.append(line)
-        init_smiles = list(set(init_smiles))  # no duplicates
+        # init_smiles = list(set(init_smiles)) 
 
         # check that parameters are valid
         assert (
@@ -99,8 +99,11 @@ class JANUS:
             self.frag_alphabet.extend(frags)
 
         # get initial fitness
-        with multiprocessing.Pool(self.num_workers) as pool:
-            init_fitness = pool.map(self.fitness_function, init_smiles)
+        # with multiprocessing.Pool(self.num_workers) as pool:
+        #     init_fitness = pool.map(self.fitness_function, init_smiles)
+        init_fitness = []
+        for smi in init_smiles:
+            init_fitness.append(self.fitness_function(smi))
 
         # sort the initial population and save in class
         idx = np.argsort(init_fitness)[::-1]

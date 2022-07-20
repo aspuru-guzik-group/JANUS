@@ -20,7 +20,7 @@ JANUS uses [SELFIES](https://github.com/aspuru-guzik-group/selfies) version 1.0.
 ## Major changes:
 
 - Support the use of any version of SELFIES (please check your installation).
-- Improved multiprocessing.
+- Improved multiprocessing. Fitness function is not parallelized, in the case that the function already spawns multiple processes.
 - GPU acceleration of neural networks.
 - Early stopping for classifier. 
 - Included SMILES filtering option.
